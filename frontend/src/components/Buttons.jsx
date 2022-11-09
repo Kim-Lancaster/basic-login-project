@@ -16,6 +16,7 @@ function Buttons(props){
     style={isMouseOver ? {backgroundColor: "black"} : {backgroundColor: 'white'}}
     onMouseOver={handleMouseOver}
     onMouseOut={handleMouseOut}
+    onClick={props.onClick}
     >
         {props.content}
     </button>

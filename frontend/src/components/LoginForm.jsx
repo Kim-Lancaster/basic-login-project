@@ -8,6 +8,8 @@ function LoginForm(){
         userPassword: ""
     })
 
+    const [apiResponse, setResponse] = useState();
+
     function handleChange(e){
         const {value, name} = e.target;
 
@@ -19,9 +21,25 @@ function LoginForm(){
         })
     }
 
+    async function handlelogin(e){
+        e.preventDefault();
+        if(nameAndPassword.userName === "" || nameAndPassword.userPassword === ""){
+            setResponse("Please enter a username and password");
+        }
+        const options = {
+            method: "POST",
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(nameAndPassword)
+        }
+        fetch("http://localhost:3001/users/login", options)
+        .then(res => res.text())
+        .then(data => {
+            console.log(data)
+        })
+    }
 
     return (<form>
-        <h4>{nameAndPassword.userName} and {nameAndPassword.userPassword}</h4>
+        <h4>{apiResponse}</h4>
         <Input
             onChange={handleChange}
             value={nameAndPassword.userName}
@@ -36,7 +54,7 @@ function LoginForm(){
             placeholder="Password" 
             name="userPassword" 
             id="password"/>
-        <Buttons type="submit" content="Login" />
+        <Buttons content="Login" onClick={handlelogin}/>
         <Buttons content="Sign up" />
     </form>)
 }

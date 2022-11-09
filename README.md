@@ -1,1 +1,0 @@
-A simple but effective example of a login or sign up page using React.

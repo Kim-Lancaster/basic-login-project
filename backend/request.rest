@@ -2,7 +2,7 @@ GET http://localhost:3000/users
 
 ###
 
-POST http://localhost:3000/users
+POST http://localhost:3000/users/signUp
 Content-Type: application/json
 
 {
@@ -17,5 +17,5 @@ Content-Type: application/json
 
 {
     "user": "new me",
-    "password": "newpassword"
+    "password": "badpassword"
 }
