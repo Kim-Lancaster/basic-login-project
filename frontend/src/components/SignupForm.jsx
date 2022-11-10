@@ -3,45 +3,69 @@ import Input from "./Input";
 import Buttons from "./Buttons";
 
 
-function SignUpForm(){
+function SignUpForm(props){
     
-    const [text, setText] = useState("")
+    const [userData, setUserData] = useState({
+        userName: "",
+        userPassword: "",
+        email: ""
+    })
     
     function handleChange(e){
-        setText(text + e.target.value)
+        const {name, value} = e.target;
+
+        setUserData((prevValue) => {
+            return {
+                ...prevValue,
+                [name]: value
+            }
+        })
     }
-    function handleClick(){
-        console.log(text)
+    function handleSignUp(e){
+        e.preventDefault();
+        const options = {
+            method: "POST",
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(userData)
+        }
+
+        fetch("http://localhost:3001/users/signUp", options)
+        .then(response => response.text())
+        .then(data => console.log(data))
+        
     }
 
     return (<form className="form">
-        <Input 
+        <Input
             onChange={handleChange}
-            value={text}
+            value={userData.userName}
             type="text"
-            placeholder="First name"
-            name="fName"
-            id="fName"
+            placeholder="User name"
+            name="userName"
+            id="userName"
         />
         <Input
             onChange={handleChange}
-            value={text}
+            value={userData.userPassword}
             type="text"
-            placeholder="Last name"
-            name="lName"
-            id="lName"
+            placeholder="Password"
+            name="userPassword"
+            id="userPassword"
         />
         <Input
             onChange={handleChange}
-            value={text}
+            value={userData.email}
             type="email"
-            placeholder="email"
+            placeholder="Email"
             name="email"
             id="email"
         />
         <Buttons 
             content="Sign Up"
-            onClick={handleClick} />
+            onClick={handleSignUp} />
+        <Buttons 
+            content="Already have an account?"
+            onClick={() => {props.setState(false)}} />
     </form>)
 }
 

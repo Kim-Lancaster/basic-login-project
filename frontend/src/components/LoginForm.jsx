@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import Input from "./Input";
 import Buttons from './Buttons';
 
-function LoginForm(){
+function LoginForm(props){
     const [nameAndPassword, setNameAndPassword] = useState({
         userName: "",
         userPassword: ""
@@ -39,7 +39,6 @@ function LoginForm(){
     }
 
     return (<form>
-        <h4>{apiResponse}</h4>
         <Input
             onChange={handleChange}
             value={nameAndPassword.userName}
@@ -55,7 +54,7 @@ function LoginForm(){
             name="userPassword" 
             id="password"/>
         <Buttons content="Login" onClick={handlelogin}/>
-        <Buttons content="Sign up" />
+        <Buttons content="Sign up" onClick={() => { props.setState(true)}}/>
     </form>)
 }
 

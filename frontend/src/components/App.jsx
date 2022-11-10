@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import LoginForm from './LoginForm';
+import SignUpForm from './SignupForm';
 
 function App(){
 
+  const [signUp, setSignUp] = useState(false);
+
   return (<div className='container'>
     <h1>Hello</h1>
-    <LoginForm />
+    {signUp? <SignUpForm setState={setSignUp}/> : <LoginForm setState={setSignUp} />}
   </div>)
 }
 
