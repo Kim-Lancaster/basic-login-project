@@ -8,8 +8,6 @@ function LoginForm(props){
         userPassword: ""
     })
 
-    const [apiResponse, setResponse] = useState();
-
     function handleChange(e){
         const {value, name} = e.target;
 
@@ -24,17 +22,18 @@ function LoginForm(props){
     async function handlelogin(e){
         e.preventDefault();
         if(nameAndPassword.userName === "" || nameAndPassword.userPassword === ""){
-            setResponse("Please enter a username and password");
+            props.setResponse("Please enter a username and password");
         }
         const options = {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
+            cache: "no-store",
             body: JSON.stringify(nameAndPassword)
         }
         fetch("http://localhost:3001/users/login", options)
         .then(res => res.text())
         .then(data => {
-            console.log(data)
+            props.setResponse(data)
         })
     }
 
@@ -54,7 +53,7 @@ function LoginForm(props){
             name="userPassword" 
             id="password"/>
         <Buttons content="Login" onClick={handlelogin}/>
-        <Buttons content="Sign up" onClick={() => { props.setState(true)}}/>
+        <Buttons content="Sign up" onClick={() => { props.setSignUp(true)}}/>
     </form>)
 }
 

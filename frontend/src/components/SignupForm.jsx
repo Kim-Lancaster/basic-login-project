@@ -26,12 +26,15 @@ function SignUpForm(props){
         const options = {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
+            cache: "no-store",
             body: JSON.stringify(userData)
         }
 
         fetch("http://localhost:3001/users/signUp", options)
         .then(response => response.text())
-        .then(data => console.log(data))
+        .then(data => {
+            props.setResponse(data)
+        })
         
     }
 
@@ -65,7 +68,7 @@ function SignUpForm(props){
             onClick={handleSignUp} />
         <Buttons 
             content="Already have an account?"
-            onClick={() => {props.setState(false)}} />
+            onClick={() => {props.setSignUp(false)}} />
     </form>)
 }
 

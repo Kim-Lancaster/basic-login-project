@@ -16,9 +16,8 @@ app.post('/users/signUp', async(req, res) => {
     try{
         await client.connect();//make sure we are connect to database before we continue
         const hashedPassword = await bcryptjs.hash(req.body.userPassword, 10);
-        const user = {user: req.body.userName, password: hashedPassword}
         const response = await addUser(req.body.userName, hashedPassword);
-        res.status(201).send(response.acknowledged)
+        res.status(201).send(response)
     } catch(e){
         console.error(e);
     }
@@ -42,18 +41,21 @@ const userExist = async(user) => {
 }
 
 //check first if user exist and if not add the user and password to the database
-const addUser = async(user, hashedPassword) => {
-    if(await userExist(user)){
+const addUser = async(attemptedUser, hashedPassword) => {
+    if(await userExist(attemptedUser)){
         return 'That user name already exist!'
     } else {
-        return await client.db('login_database').collection('users').insertOne({user: user, password: hashedPassword})
+        await client.db('login_database').collection('users').insertOne({user: attemptedUser, password: hashedPassword})
+        return 'Account created!'
     }
 }
 
 //check if user exist and if true check if password is correct
 const retrieveUser = async(attemptedUser, attemptedPassword) => {
-    const { user, password } = await userExist(attemptedUser);
-    if(user){
+    if(await userExist(attemptedUser)){
+        //I get weird behavior when I try destructure an object that does not exist in the collection
+        //so I had to move this here - probably need to assign default values for the destructuring
+        const { user, password } = await userExist(attemptedUser);  
         if(await bcryptjs.compare(attemptedPassword, password)){
             return `Success login: ${user}`;
         } else {
@@ -62,7 +64,7 @@ const retrieveUser = async(attemptedUser, attemptedPassword) => {
     } else {
         return'That user is not registered';
     }
-   
+    
 }
 
 app.listen(3001, () => {
