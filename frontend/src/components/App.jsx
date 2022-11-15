@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
-import LoginForm from './LoginForm';
-import SignUpForm from './SignupForm';
+
+import Profile from './Profile';
+import LoginPage from './LoginPage';
 
 function App(){
 
-  const [signUp, setSignUp] = useState(false);
-
+  const [isLoggedIn, setLoggedIn] = useState(false);
   const [apiResponse, setResponse] = useState();
 
   return (<div className='container'>
-    <h1>Hello</h1>
-    {signUp? 
-      <SignUpForm setSignUp={setSignUp} setResponse={setResponse}/> : 
-      <LoginForm setSignUp={setSignUp} setResponse={setResponse} />
-      }
-    <p>{apiResponse}</p>
+    {!isLoggedIn && <h1>Hello</h1> }
+    {!isLoggedIn ? <Profile user={apiResponse} setResponse={setResponse} setLoggedIn={setLoggedIn} /> :
+    <LoginPage setResponse={setResponse} setLoggedIn={setLoggedIn}/>}
+    {!isLoggedIn && <p>{apiResponse}</p>}
+
+
   </div>)
 }
 

@@ -31,9 +31,12 @@ function LoginForm(props){
             body: JSON.stringify(nameAndPassword)
         }
         fetch("http://localhost:3001/users/login", options)
-        .then(res => res.text())
+        .then(res => res.json())
         .then(data => {
-            props.setResponse(data)
+            props.setResponse(data.text)
+            if(data.success === true){
+                props.setLoggedIn(true);
+            }
         })
     }
 

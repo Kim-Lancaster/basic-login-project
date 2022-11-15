@@ -31,9 +31,25 @@ function SignUpForm(props){
         }
 
         fetch("http://localhost:3001/users/signUp", options)
-        .then(response => response.text())
+        .then(response => response.json())
         .then(data => {
-            props.setResponse(data)
+            props.setResponse(data.text)
+            if(data.text === 'That user name already exist!'){
+                setUserData(prevValue => {
+                return{
+                        ...prevValue,
+                        userName: ""
+                    } 
+                })
+            } else {
+                setUserData({
+                    userName: "",
+                    userPassword: "",
+                    email: ""
+                })
+                props.setSignUp(false)
+            }
+            
         })
         
     }

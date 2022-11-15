@@ -35,6 +35,17 @@ app.post('/users/login', async(req, res) => {
     }     
 })
 
+app.put('/users/update', async(req, res) => {
+    await client.connect();//make sure we are connect to database before we continue
+
+    try {
+        const response = await updatePassword(req.body.userName, req.body.newPassword);
+        res.status(201).send(response);
+    } catch {
+        res.status(505).send();
+    }
+})
+
 //used to check if user is trying to use an already taken name, and to see if user is a registered user
 const userExist = async(user) => {
     return await client.db('login_database').collection('users').findOne({user: user});
@@ -43,28 +54,31 @@ const userExist = async(user) => {
 //check first if user exist and if not add the user and password to the database
 const addUser = async(attemptedUser, hashedPassword) => {
     if(await userExist(attemptedUser)){
-        return 'That user name already exist!'
+        return {success: false, text: 'That user name already exist!'};
     } else {
         await client.db('login_database').collection('users').insertOne({user: attemptedUser, password: hashedPassword})
-        return 'Account created!'
+        return {success: false, text: 'Account created!'};
     }
 }
 
 //check if user exist and if true check if password is correct
 const retrieveUser = async(attemptedUser, attemptedPassword) => {
     if(await userExist(attemptedUser)){
-        //I get weird behavior when I try destructure an object that does not exist in the collection
-        //so I had to move this here - probably need to assign default values for the destructuring
         const { user, password } = await userExist(attemptedUser);  
         if(await bcryptjs.compare(attemptedPassword, password)){
-            return `Success login: ${user}`;
+            return {success: true, text: user};
         } else {
-            return 'Not Allowed';
+            return {success: false, text: 'Not Allowed'};
         }
     } else {
-        return'That user is not registered';
+        return {success: false, text: 'That user is not registered'};
     }
     
+}
+
+const updatePassword = async(userName, newPassword) => {
+    await client.db.apply('login_database').collection('users').updateOne({user: userName}, {$set: {password: newPassword}})
+    return "Password is updated!"
 }
 
 app.listen(3001, () => {

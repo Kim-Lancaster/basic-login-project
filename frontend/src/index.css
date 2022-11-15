@@ -30,7 +30,7 @@ form {
   flex-direction: column;
   align-items: center;
 }
-form input {
+input {
   border: 1px solid rgba(252, 252, 252, 0.4);
   background-color: rgba(252, 252, 252, 0.2);
   width: 250px;
@@ -42,7 +42,7 @@ form input {
   color: white;
 }
 
-form button {
+button {
   appearance: none;
   outline: 0;
   background-color: white;
@@ -54,4 +54,8 @@ form button {
   width: 282px;
   font-size: 18px;
 }
-
+.logged-in{
+  display: block;
+  width: 20%;
+  margin: 5% auto;
+}
