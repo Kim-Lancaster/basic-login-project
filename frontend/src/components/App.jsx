@@ -10,11 +10,11 @@ function App(){
 
   return (<div className='container'>
     {!isLoggedIn && <h1>Hello</h1> }
-    {!isLoggedIn ? <Profile user={apiResponse} setResponse={setResponse} setLoggedIn={setLoggedIn} /> :
-    <LoginPage setResponse={setResponse} setLoggedIn={setLoggedIn}/>}
+    {isLoggedIn ? 
+    <Profile user={apiResponse} setResponse={setResponse} setLoggedIn={setLoggedIn}  apiResponse={apiResponse}/> :
+    <LoginPage setResponse={setResponse} setLoggedIn={setLoggedIn} />}
     {!isLoggedIn && <p>{apiResponse}</p>}
-
-
+    <p className='forgot-password'>Forgot Password?</p>
   </div>)
 }
 

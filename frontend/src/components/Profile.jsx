@@ -3,25 +3,26 @@ import Input from "./Input";
 
 function Profile (props) {
 
-    const [newPassword, setNewPassword] = useState();
-    const options = {
-        method: "PUT",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            userName: props.apiResponse, 
-            newPassword: newPassword
-        })
-    }
+    const [newPassword, setNewPassword] = useState("");
+    const [changedPassword, setChanged] = useState(false);
+
     function onChange(e){
-        setNewPassword(e.target.value)//stopped here 
-        //don't know if it is a problem but state printed to the console
-        //seems to always be on char behind.
-        //have not tested if this will be true on click when
-        //state value us transfered to the backend.
+        setNewPassword(e.target.value)
     }
+    
     function handlePasswordClick(){
-        fetch('http://localhost:3001/users/update', options)
-    }
+        console.log(newPassword)
+        fetch('http://localhost:3001/users/update', {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                userName: props.user, 
+                newPassword: newPassword
+            })
+    })
+    setChanged(true)
+}
+
     function handleLogOutClick(){
         props.setResponse("") 
         props.setLoggedIn(false)
@@ -30,14 +31,23 @@ function Profile (props) {
     return <div>
             <h1>Welcome Back {props.user}</h1>
             <div className="logged-in">
-                <Input 
-                    onChange={onChange}
-                    value={newPassword}
-                    type="text"
-                    name="userPassword"
-                    id="password"
-                    />
-                <button onClick={handlePasswordClick}>Change Password</button>
+               {!changedPassword ? <div>
+                    <Input 
+                        onChange={onChange}
+                        value={newPassword}
+                        type="text"
+                        name="userPassword"
+                        id="password"
+                        />
+                    <button 
+                        onClick={handlePasswordClick}>
+                            Change Password
+                    </button>
+                </div> :
+                <div className='password-changed-dialog'>
+                Your password has been updated
+                </div>
+                }
                 <button onClick={handleLogOutClick}>Log out</button>
             </div>
         </div>

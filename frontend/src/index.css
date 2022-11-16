@@ -59,3 +59,14 @@ button {
   width: 20%;
   margin: 5% auto;
 }
+.password-changed-dialog {
+  margin: 10% auto;
+}
+.forgot-password {
+  max-width: fit-content;
+  margin: auto;
+}
+.forgot-password:hover{
+  text-decoration: underline;
+  cursor: pointer;
+}
