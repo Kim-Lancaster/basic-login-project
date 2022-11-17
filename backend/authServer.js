@@ -5,6 +5,8 @@ const cors = require('cors');
 const { MongoClient } = require('mongodb');
 const dotenv = require('dotenv');
 dotenv.config();
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const url = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_KEY}@cluster0.iklsr8u.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(url);
@@ -44,10 +46,35 @@ app.put('/users/update', async(req, res) => {
         res.status(505).send();
     }
 })
-
-app.put('/users/forgotPassword', (req, res) => {
-    console.log(req.body.email);
+////////////////////WORKING HERE!!///////////////////////////////////////////////////////////
+app.post('/users/forgotpassword', async(req, res) => {
+    await client.connect();
+    if(await client.db('login_database').collection('users').findOne({email: req.body.email})){
+        let transporter = nodemailer.createTransport({
+            service: "hotmail",
+            secure: false,
+            auth: {
+                user: `${process.env.EMAIL_KEY}@${process.env.EMAIL_SERVICE}.com`,
+                pass: process.env.EMAIL_KEY
+            }
+        })
+        // console.log(process.env.EMAIL_KEY);
+        const resetToken = crypto.createHash('sha512').update(req.body.email).digest('hex');
+        const hashedToken = await bcryptjs.hash(resetToken, 10);
+        await client.db('login_database').collection('users').updateOne({email: req.body.email}, {$set: {token: hashedToken, createdAt: new Date().getMinutes()}})
+        await client.db('login_database').collection('users').createIndex({createdAt: 1}, {expireAfterSeconds: 60});
+        // const options = {
+        //     from: "Login Page",
+        //     to: req.body.email,
+        //     subject: "Password reset request",
+        //     text: `` //put the page `http://localhost:3000/resetpassword?token=${resetToken}&email=${req.body.email}`
+        // };
+        // let info = await transporter.sendMail(options);
+        // console.log("Message sent: %s", info.messageId);
+    }
 })
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 
 //used to check if user is trying to use an already taken name, and to see if user is a registered user
 const userExist = async(user) => {
