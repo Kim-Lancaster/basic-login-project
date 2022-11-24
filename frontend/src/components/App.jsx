@@ -12,7 +12,7 @@ function App(){
     fetch('http://localhost:3001/users/forgotpassword', {
       method: "POST",
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({email: 'test@test.com'})
+      body: JSON.stringify({email: 'kim.lancaster@protonmail.com'})
     })
     console.log('im clicked')
   }

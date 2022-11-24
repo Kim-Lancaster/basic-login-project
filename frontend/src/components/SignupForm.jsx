@@ -8,7 +8,8 @@ function SignUpForm(props){
     const [userData, setUserData] = useState({
         userName: "",
         userPassword: "",
-        email: ""
+        email: "",
+        time: new Date()
     })
     
     function handleChange(e){
