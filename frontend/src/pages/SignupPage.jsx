@@ -1,17 +1,21 @@
 import React, { useState } from "react";
 import Input from "./Input";
 import Buttons from "./Buttons";
-
+import { useAuth } from '../context/authContext';
+import { useNavigate } from 'react-router-dom';
+import LoginForm from "./LoginPage";
 
 function SignUpForm(props){
-    
+    //try useRef for these in the future
     const [userData, setUserData] = useState({
         userName: "",
         userPassword: "",
         email: "",
         time: new Date()
     })
-    
+
+    const { signup } = useAuth();
+    const navigate = useNavigate();
     function handleChange(e){
         const {name, value} = e.target;
 
@@ -21,17 +25,11 @@ function SignUpForm(props){
                 [name]: value
             }
         })
-    }
+    };
     function handleSignUp(e){
-        e.preventDefault();
-        const options = {
-            method: "POST",
-            headers: {'Content-Type': 'application/json'},
-            cache: "no-store",
-            body: JSON.stringify(userData)
-        }
-
-        fetch("http://localhost:3001/users/signUp", options)
+        // e.preventDefault();
+       //insert username and password validation here
+        signup(userName, userPassword, email)
         .then(response => response.json())
         .then(data => {
             props.setResponse(data.text)
@@ -52,10 +50,14 @@ function SignUpForm(props){
             }
             
         })
+        .catch(e => {console.log(e)});
         
+    };
+    function handleClick(){
+        navigate('/');
     }
-
-    return (<form className="form">
+    return (   
+        <form className="form">
         <Input
             onChange={handleChange}
             value={userData.userName}
@@ -85,8 +87,9 @@ function SignUpForm(props){
             onClick={handleSignUp} />
         <Buttons 
             content="Already have an account?"
-            onClick={() => {props.setSignUp(false)}} />
-    </form>)
+            onClick={handleClick} />
+    </form>
+    )
 }
 
 export default SignUpForm

@@ -1,13 +1,20 @@
 import React, {useState} from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
 import Input from "./Input";
 import Buttons from './Buttons';
 
 function LoginForm(props){
+
+    //state of typed username and password
     const [nameAndPassword, setNameAndPassword] = useState({
         userName: "",
         userPassword: ""
     })
+    //sets navigate to useNavigate hook
+    const navigate = useNavigate();
 
+    //handle every key stroke of input field
     function handleChange(e){
         const {value, name} = e.target;
 
@@ -18,26 +25,21 @@ function LoginForm(props){
            } 
         })
     }
-
-    async function handlelogin(e){
+    //destructures login from useAuth hook - that I created
+    const { login } = useAuth();
+    //when login button is clicked
+    //first the user's input is validated
+    //Then we call the imported login function from useAuth hook
+    //It returns a promise that has to be handled and saved to a state
+    async function handleLogin(e){
         e.preventDefault();
-        if(nameAndPassword.userName === "" || nameAndPassword.userPassword === ""){
-            props.setResponse("Please enter a username and password");
-        }
-        const options = {
-            method: "POST",
-            headers: {'Content-Type': 'application/json'},
-            cache: "no-store",
-            body: JSON.stringify(nameAndPassword)
-        }
-        fetch("http://localhost:3001/users/login", options)
-        .then(res => res.json())
-        .then(data => {
-            props.setResponse(data.text)
-            if(data.success === true){
-                props.setLoggedIn(true);
-            }
-        })
+        console.log("test")
+        await login(nameAndPassword);
+    }
+    //Second part of the useNavigate hook
+    //will redirect to signup page if button is clicked
+    function handleClick(){
+        navigate('/signup');
     }
 
     return (<form>
@@ -55,8 +57,8 @@ function LoginForm(props){
             placeholder="Password" 
             name="userPassword" 
             id="password"/>
-        <Buttons content="Login" onClick={handlelogin}/>
-        <Buttons content="Sign up" onClick={() => { props.setSignUp(true)}}/>
+        <Buttons content="Login" onClick={handleLogin}/>
+        <Buttons content="Sign up" onClick={handleClick}/>
     </form>)
 }
 

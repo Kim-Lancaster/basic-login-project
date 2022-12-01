@@ -7,7 +7,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const { ClientRequest } = require('http');
+// const { ClientRequest } = require('http');
 
 const url = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_KEY}@cluster0.iklsr8u.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(url);
@@ -31,7 +31,13 @@ app.post('/users/login', async(req, res) => {
     await client.connect();//make sure we are connect to database before we continue
 
     try{
+        console.log(`user: ${req.body.userName}, password: ${req.body.userPassword}`)
         const response = await retrieveUser(req.body.userName, req.body.userPassword);
+        if(response.success){
+            res.send(response)
+        } else {
+            res.send(response);
+        }
         res.send(response);
     } catch {
         res.status(505).send()
@@ -52,12 +58,12 @@ app.put('/users/update', async(req, res) => {
 app.post('/users/forgotpassword', async(req, res) => {
     console.log('weeee lets send an email')
     await client.connect();
-    const email = await client.db('login_database').collection('users').findOne({email: req.body.email})
-    console.log(email)
-    if(email){
+    const user = await client.db('login_database').collection('users').findOne({email: req.body.email})
+    console.log(user)
+    if(user){
         //Create transporter if client exist
         let transporter = nodemailer.createTransport({
-            service: "hotmail",
+            service: "protonmail",
             secure: false,
             auth: {
                 user: '',//only added for testing
@@ -73,15 +79,10 @@ app.post('/users/forgotpassword', async(req, res) => {
         //Create email template to send with nodemailer
         //Token is un-hashed in email - read that this was the way it was done
         const options = {
-            from: "Kim Lancaster's Login App",
-            to: req.body.email,
-            subject: "Password reset request",
-            text: `Hello,
-            Sorry you forgot your password!  Here is a niffty little link that will help you get everything working again.
-            http://localhost:3000/resetpassword?token=${resetToken}&email=${req.body.email}&date=${date}
-            If you didn't request a password reset please delete this email.  The link will expire in 1 hour.
-            Have a great day,
-            K.L. Development Team`
+            from: "You made a request!",
+            to: user.email,
+            subject: "Test",
+            text: 'Hi this is a test'//`http://localhost:3000/reset/${resetToken}&${req.body.email}&${date}`
         };
         let info = await transporter.sendMail(options);
         console.log("Message sent: %s", info.messageId);
