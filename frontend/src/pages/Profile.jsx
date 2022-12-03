@@ -1,10 +1,14 @@
-import React, { useState } from "react";
-import Input from "./Input";
+import React, { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from 'react-router-dom';
+import Input from "../components/Input";
 
-function Profile (props) {
+function Profile(){
 
     const [newPassword, setNewPassword] = useState("");
     const [changedPassword, setChanged] = useState(false);
+    const { user, setUser } = useContext(AuthContext);
+    const navigate = useNavigate();
 
     function onChange(e){
         setNewPassword(e.target.value)
@@ -12,12 +16,11 @@ function Profile (props) {
     
     //api call to change password and remove the input field
     function handlePasswordClick(){
-        console.log(newPassword)
         fetch('http://localhost:3001/users/update', {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
-                userName: props.user, 
+                userName: user, 
                 newPassword: newPassword
             })
     })
@@ -25,40 +28,33 @@ function Profile (props) {
     }
     //Log out
     function handleLogOutClick(){
-        props.setResponse("") 
-        props.setLoggedIn(false)
+        setUser(null);
+        navigate('/');
     }
 
-    //handle if credentials are good
-    //because this uses routes there needs to be a way to restrict access
-    //if the url is manually typed in
-    if(props.apiResponse.success){
-        return <>
-            <h1>Welcome Back {props.user}</h1>
-            <div className="logged-in">
-               {!changedPassword ? <div>
-                    <Input 
-                        onChange={onChange}
-                        value={newPassword}
-                        type="text"
-                        name="userPassword"
-                        id="password"
-                        />
-                    <button 
-                        onClick={handlePasswordClick}>
-                            Change Password
-                    </button>
-                </div> :
-                <div className='password-changed-dialog'>
-                Your password has been updated
-                </div>
-                }
-                <button onClick={handleLogOutClick}>Log out</button>
+    return (<>
+        <h1>Welcome Back {user}</h1>
+        <div className="logged-in">
+            {!changedPassword ? <div>
+                <Input 
+                    onChange={onChange}
+                    value={newPassword}
+                    type="text"
+                    name="userPassword"
+                    id="password"
+                    />
+                <button 
+                    onClick={handlePasswordClick}>
+                        Change Password
+                </button>
+            </div> :
+            <div className='password-changed-dialog'>
+            Your password has been updated
             </div>
-        </>
-    } else {
-        return <h3>Something went wrong</h3>
-    }
+            }
+            <button onClick={handleLogOutClick}>Log out</button>
+        </div>
+    </>)
 }
 
 export default Profile;

@@ -1,18 +1,25 @@
-import React, {useState} from 'react';
+//useContext must be imported to change { authContext }
+import React, {useState, useContext} from 'react';
+//to navigate between login and signup with button click
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/authContext';
-import Input from "./Input";
-import Buttons from './Buttons';
+//import the self-created context
+import { AuthContext } from '../context/AuthContext';
+//imported self-created components
+import Input from "../components/Input";
+import Buttons from '../components/Buttons';
 
-function LoginForm(props){
+function LoginForm(){
 
     //state of typed username and password
     const [nameAndPassword, setNameAndPassword] = useState({
         userName: "",
         userPassword: ""
     })
-    //sets navigate to useNavigate hook
+    const [errorMsg, setErrorMsg] = useState('');
+    //2nd part of the useNavigate hook
     const navigate = useNavigate();
+    // I have no idea why???????????
+    const { user, setUser } = useContext(AuthContext);
 
     //handle every key stroke of input field
     function handleChange(e){
@@ -25,24 +32,36 @@ function LoginForm(props){
            } 
         })
     }
-    //destructures login from useAuth hook - that I created
-    const { login } = useAuth();
     //when login button is clicked
-    //first the user's input is validated
-    //Then we call the imported login function from useAuth hook
-    //It returns a promise that has to be handled and saved to a state
-    async function handleLogin(e){
+    function handleLogin(e){
         e.preventDefault();
-        console.log("test")
-        await login(nameAndPassword);
-    }
-    //Second part of the useNavigate hook
-    //will redirect to signup page if button is clicked
-    function handleClick(){
-        navigate('/signup');
+        console.log('working')
+        fetch("http://localhost:3001/users/login", {
+            method: "POST",
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(nameAndPassword)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            if(data.success == true){
+                setUser(data.text)
+                navigate(`/user/${data.text}`);
+            } else {
+                setErrorMsg(data.text)
+                setNameAndPassword({
+                    userName: "",
+                    userPassword: ""
+                })
+            }
+        })
     }
 
-    return (<form>
+    return (<>
+    <div className='error'>
+        <p>{errorMsg}</p>
+    </div>
+    <form>
         <Input
             onChange={handleChange}
             value={nameAndPassword.userName}
@@ -58,8 +77,11 @@ function LoginForm(props){
             name="userPassword" 
             id="password"/>
         <Buttons content="Login" onClick={handleLogin}/>
-        <Buttons content="Sign up" onClick={handleClick}/>
-    </form>)
+        <Buttons content="Sign up" onClick={() => navigate('/signup')}/>
+    </form>
+    <p className='forgot' onClick={() => navigate('/forgotpassword')}>Forgot Password?</p>
+    <p>{user}</p>
+    </>)
 }
 
 export default LoginForm

@@ -18,9 +18,9 @@ body {
   text-align: center;
 }
 
-.container h1 {
-  font-size: 40px;
-  font-weight: 200;
+.error {
+  height: 20px;
+  color: rgb(156, 16, 16);
 }
 
 form {
@@ -62,11 +62,15 @@ button {
 .password-changed-dialog {
   margin: 10% auto;
 }
-.forgot-password {
+.forgot,
+.cancel,
+.back-to-login {
   max-width: fit-content;
   margin: auto;
 }
-.forgot-password:hover{
+.forgot:hover,
+.cancel:hover,
+.back-to-login:hover {
   text-decoration: underline;
   cursor: pointer;
 }

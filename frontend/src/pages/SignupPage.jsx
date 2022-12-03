@@ -1,20 +1,20 @@
 import React, { useState } from "react";
-import Input from "./Input";
-import Buttons from "./Buttons";
-import { useAuth } from '../context/authContext';
+import Input from "../components/Input";
+import Buttons from "../components/Buttons";
 import { useNavigate } from 'react-router-dom';
-import LoginForm from "./LoginPage";
 
 function SignUpForm(props){
     //try useRef for these in the future
     const [userData, setUserData] = useState({
         userName: "",
         userPassword: "",
-        email: "",
-        time: new Date()
+        email: ""
     })
+    const [msg, setMsg] = useState({
+        success: "",
+        error: ""
+    });
 
-    const { signup } = useAuth();
     const navigate = useNavigate();
     function handleChange(e){
         const {name, value} = e.target;
@@ -26,70 +26,81 @@ function SignUpForm(props){
             }
         })
     };
+
     function handleSignUp(e){
-        // e.preventDefault();
-       //insert username and password validation here
-        signup(userName, userPassword, email)
+        e.preventDefault();
+       fetch("http://localhost:3001/users/signup", {
+            method: "POST",
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(userData)
+        })
         .then(response => response.json())
         .then(data => {
-            props.setResponse(data.text)
-            if(data.text === 'That user name already exist!'){
-                setUserData(prevValue => {
-                return{
-                        ...prevValue,
-                        userName: ""
-                    } 
-                })
-            } else {
+            if(data.success === true){
+                setMsg({success: data.text, error: ""})
                 setUserData({
                     userName: "",
                     userPassword: "",
                     email: ""
                 })
-                props.setSignUp(false)
+            } else {
+                setMsg({success: "", error: data.text})
+                setUserData(prev => {
+                    return {
+                        ...prev,
+                        userName: ""
+                    }
+                })
             }
             
+
         })
-        .catch(e => {console.log(e)});
-        
     };
+
     function handleClick(){
         navigate('/');
     }
-    return (   
+    return (
+        <>
+        <div className="error">
+            <p>{msg.error}</p>
+        </div>  
         <form className="form">
-        <Input
-            onChange={handleChange}
-            value={userData.userName}
-            type="text"
-            placeholder="User name"
-            name="userName"
-            id="userName"
-        />
-        <Input
-            onChange={handleChange}
-            value={userData.userPassword}
-            type="text"
-            placeholder="Password"
-            name="userPassword"
-            id="userPassword"
-        />
-        <Input
-            onChange={handleChange}
-            value={userData.email}
-            type="email"
-            placeholder="Email"
-            name="email"
-            id="email"
-        />
-        <Buttons 
-            content="Sign Up"
-            onClick={handleSignUp} />
-        <Buttons 
-            content="Already have an account?"
-            onClick={handleClick} />
-    </form>
-    )
+            <Input
+                onChange={handleChange}
+                value={userData.userName}
+                type="text"
+                placeholder="User name"
+                name="userName"
+                id="userName"
+            />
+            <Input
+                onChange={handleChange}
+                value={userData.userPassword}
+                type="text"
+                placeholder="Password"
+                name="userPassword"
+                id="userPassword"
+            />
+            <Input
+                onChange={handleChange}
+                value={userData.email}
+                type="email"
+                placeholder="Email"
+                name="email"
+                id="email"
+            />
+            <Buttons 
+                content="Sign Up"
+                onClick={handleSignUp} />
+            <Buttons 
+                content="Already have an account?"
+                onClick={handleClick} />
+        </form>
+        <div>
+            <p>{msg.success}</p>
+        </div>
+    </> )
 }
 
 export default SignUpForm
