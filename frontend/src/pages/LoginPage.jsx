@@ -18,8 +18,10 @@ function LoginForm(){
     const [errorMsg, setErrorMsg] = useState('');
     //2nd part of the useNavigate hook
     const navigate = useNavigate();
-    // I have no idea why???????????
-    const { user, setUser } = useContext(AuthContext);
+    
+    const { userState, loadingState } = useContext(AuthContext);
+    const [user, setUser] = userState;
+    const [loading, setLoading] = loadingState;
 
     //handle every key stroke of input field
     function handleChange(e){
@@ -35,7 +37,7 @@ function LoginForm(){
     //when login button is clicked
     function handleLogin(e){
         e.preventDefault();
-        console.log('working')
+        setLoading(true);
         fetch("http://localhost:3001/users/login", {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
@@ -55,6 +57,7 @@ function LoginForm(){
                 })
             }
         })
+        setLoading(false);
     }
 
     return (<>
@@ -76,8 +79,8 @@ function LoginForm(){
             placeholder="Password" 
             name="userPassword" 
             id="password"/>
-        <Buttons content="Login" onClick={handleLogin}/>
-        <Buttons content="Sign up" onClick={() => navigate('/signup')}/>
+        <Buttons isDisabled={!nameAndPassword.userName && !nameAndPassword.userPassword ? true : loading} content="Login" onClick={handleLogin}/>
+        <Buttons isDisabled={loading} content="Sign up" onClick={() => navigate('/signup')}/>
     </form>
     <p className='forgot' onClick={() => navigate('/forgotpassword')}>Forgot Password?</p>
     <p>{user}</p>

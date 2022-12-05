@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import Buttons from "../components/Buttons";
 import Input from "../components/Input";
+import { AuthContext } from "../context/AuthContext";
 
 function Reset(){
   /// destructuring the link string to get the data  
@@ -15,6 +16,10 @@ function Reset(){
     success: null,
     error: null
   })
+  //destructuring loading context from app.jsx
+  const { loadingState } = useContext(AuthContext);
+  const [loading, setLoading] = loadingState;
+
   const navigate = useNavigate();
 
   //creating new time to check of token is still valid
@@ -29,6 +34,7 @@ function Reset(){
 
   function handleClick(e){
     e.preventDefault();
+    setLoading(true);
     fetch('http://localhost:3001/resetpassword', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -47,6 +53,7 @@ function Reset(){
         setMsg({success: null, error: data.text})
       }
     })
+    setLoading(false)
   }
 
 
@@ -68,7 +75,8 @@ function Reset(){
       />
       <Buttons
         content="Reset Password"
-        onClick={handleClick} />
+        onClick={handleClick}
+        isDisabled={!password ? true : loading} />
     </form>}
   </>:
   <h1>Sorry, your token has expired</h1>

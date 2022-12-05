@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { AuthContext } from '../context/AuthContext';
 import Input from "../components/Input";
 import Buttons from "../components/Buttons";
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +17,9 @@ function SignUpForm(props){
     });
 
     const navigate = useNavigate();
+    const { loadingState } = useContext(AuthContext);
+    const [loading, setLoading] = loadingState;
+
     function handleChange(e){
         const {name, value} = e.target;
 
@@ -91,9 +95,11 @@ function SignUpForm(props){
                 id="email"
             />
             <Buttons 
+                isDisabled={!userData.userName && !userData.userPassword && !userData.email ? true : loading}
                 content="Sign Up"
                 onClick={handleSignUp} />
             <Buttons 
+                isDisabled={false}
                 content="Already have an account?"
                 onClick={handleClick} />
         </form>

@@ -2,12 +2,15 @@ import React, { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from 'react-router-dom';
 import Input from "../components/Input";
+import Buttons from "../components/Buttons";
 
 function Profile(){
 
     const [newPassword, setNewPassword] = useState("");
     const [changedPassword, setChanged] = useState(false);
-    const { user, setUser } = useContext(AuthContext);
+    const { userState, loadingState } = useContext(AuthContext);
+    const [user, setUser] = userState;
+    const [loading, setLoading] = loadingState;
     const navigate = useNavigate();
 
     function onChange(e){
@@ -16,6 +19,7 @@ function Profile(){
     
     //api call to change password and remove the input field
     function handlePasswordClick(){
+        setLoading(true)
         fetch('http://localhost:3001/users/update', {
             method: "PUT",
             headers: {"Content-Type": "application/json"},
@@ -43,16 +47,19 @@ function Profile(){
                     name="userPassword"
                     id="password"
                     />
-                <button 
-                    onClick={handlePasswordClick}>
-                        Change Password
-                </button>
+                <Buttons
+                    onClick={handlePasswordClick}
+                    isDisabled={!newPassword ? true : loading}
+                    content="Change Password" />
             </div> :
             <div className='password-changed-dialog'>
             Your password has been updated
             </div>
             }
-            <button onClick={handleLogOutClick}>Log out</button>
+            <Buttons 
+                onClick={handleLogOutClick}
+                content="Log out"
+                isDisabled={false} />
         </div>
     </>)
 }

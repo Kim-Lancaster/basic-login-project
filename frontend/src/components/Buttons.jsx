@@ -13,10 +13,11 @@ function Buttons(props){
 
     return(
     <button
-    style={isMouseOver ? {backgroundColor: "black"} : {backgroundColor: 'white'}}
+    style={isMouseOver ? {backgroundColor: "black", cursor: "pointer"} : {backgroundColor: 'white'}}
     onMouseOver={handleMouseOver}
     onMouseOut={handleMouseOut}
     onClick={props.onClick}
+    disabled={props.isDisabled}
     >
         {props.content}
     </button>

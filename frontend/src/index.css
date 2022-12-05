@@ -54,6 +54,9 @@ button {
   width: 282px;
   font-size: 18px;
 }
+button[disabled] {
+  color: grey;
+}
 .logged-in{
   display: block;
   width: 20%;
