@@ -7,7 +7,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-// const { ClientRequest } = require('http');
 
 const url = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_KEY}@cluster0.iklsr8u.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(url);
@@ -28,17 +27,9 @@ app.post('/users/signup', async(req, res) => {
 })
 ///////////////LOGIN ENDPOINT////////////////////////////////////////
 app.post('/users/login', async(req, res) => {
-
     await client.connect();//make sure we are connect to database before we continue
-
     try{
-        const response = await retrieveUser(req.body.userName, req.body.userPassword);
-        if(response.success){
-            res.send(response)
-        } else {
-            res.send(response);
-        }
-        res.send(response);
+        res.send(await retrieveUser(req.body.userName, req.body.userPassword));
     } catch {
         res.status(505).send()
     }     
@@ -48,7 +39,7 @@ app.put('/users/update', async(req, res) => {
     await client.connect();//make sure we are connect to database before we continue
     try {
         const hashedNewPassword = await bcryptjs.hash(req.body.newPassword, 10);
-        const response = await updatePassword(req.body.userName, hashedNewPassword);
+        await updatePassword(req.body.userName, hashedNewPassword);
         res.status(201).send();
     } catch {
         res.status(505).send();
@@ -56,11 +47,10 @@ app.put('/users/update', async(req, res) => {
 })
 ///////////////FORGOT PASSWORD ENDPOINT//////////////////////////////////
 app.post('/users/forgotpassword', async(req, res) => {
-    await client.connect();
+    await client.connect();//make sure we are connect to database before we continue
     const user = await client.db('login_database').collection('users').findOne({email: req.body.email})
-    console.log(user)
     if(user){
-        //Create transporter if client exist
+        //Create transporter for NODEMAILER if client exist
         let transporter = nodemailer.createTransport({
             service: "hotmail",
             secure: false,
@@ -69,16 +59,15 @@ app.post('/users/forgotpassword', async(req, res) => {
                 pass: process.env.EMAIL_PASSWORD
             }
         })
-        //Create token and date to add to database and send in email
-        const date = String(new Date().getHours()) + String(new Date().getMinutes());
-        console.log(date)
+        //Create TOKEN and DATE to add to database and send in email
+        const date = String(new Date().getHours()) + String(new Date().getMinutes()); //The hour and minute is needed
         const key = req.body.email + date; //something that is unique each time a token is created
-        const resetToken = crypto.createHash('sha512').update(key).digest('hex');
-        const hashedResetToken = await bcryptjs.hash(resetToken, 10);
-        console.log(hashedResetToken)
+        const resetToken = crypto.createHash('sha512').update(key).digest('hex'); //create token to be send in email
+        const hashedResetToken = await bcryptjs.hash(resetToken, 10); //hash token that will be saved to Mongodb
+
+        //save the token and date to the database
         await client.db('login_database').collection('users').updateOne({email: req.body.email}, {$set: {token: hashedResetToken, date: date}})
-        //Create email template to send with nodemailer
-        //Token is un-hashed in email - read that this was the way it was done
+        //Create email template to send with NODEMAILER
         const options = {
             from: "You made a request!",
             to: user.email,
@@ -87,25 +76,26 @@ app.post('/users/forgotpassword', async(req, res) => {
             http://localhost:3000/reset/${user.user}&${resetToken}&${req.body.email}&${date}
             please click to be re-directed to a reset page.`
         };
-        let info = await transporter.sendMail(options);
+        let info = await transporter.sendMail(options); // saving response from sending the email
+        //checking if any value is saved to the accepted array -> if yes then our API did it's part (no telling what the email provider will do)
         if(info.accepted.length > 0){
             res.send({success: true, text: 'Email sent, please check your inbox'})
         } else {
             res.send({success: false, text: 'We\'re sorry, something when wrong!'})
         }
-    } else {
+    } else { //this is for if the email entered by the user did not match any in the database
         res.send({success: false, text: 'That email does not match.'})
     }
 })
-//////////////////////ENDED HERE!!!!!!!!!!!!!!///////////////////////////
 //////////////////////RESET PASSWORD ENDPOINT////////////////////////////////
 app.post('/resetpassword', async(req, res) => {
-    console.log('im going!')
+    await client.connect();//make sure we are connect to database before we continue
     const { user, token, changedPassword } = req.body;
-
+    //hashing the new password
     const hashedPassword = await bcryptjs.hash(changedPassword, 10);
-
+    //retrieving the user from the database
     const response = await client.db('login_database').collection('users').findOne({user: user})
+    //if the USER and TOKEN match in the database ONLY THEN is the password updated
     if(response && await bcryptjs.compare(token, response.token)){
         console.log('Im going to reset')
         await updatePassword(user, hashedPassword)
@@ -114,13 +104,15 @@ app.post('/resetpassword', async(req, res) => {
         res.send({success: false, text: 'Either the user or the token did not match our database'});
     }
 })
+////////////////////////END OF ALL ENDPOINTS//////////////////////////////////////////////
 
+/////////////////////////HELPER FUNCTIONS BELOW////////////////////////////////////////////////
 //used to check if user is trying to use an already taken name, and to see if user is a registered user
 const userExist = async(user) => {
     return await client.db('login_database').collection('users').findOne({user: user});
 }
 
-//check first if user exist and if not add the user and password to the database
+//check first if user exist and if FALSE add the user and password to the database
 const addUser = async(attemptedUser, hashedPassword, email, time) => {
     if(await userExist(attemptedUser)){
         return {success: false, text: 'That user name already exist!'};
@@ -130,7 +122,7 @@ const addUser = async(attemptedUser, hashedPassword, email, time) => {
     }
 }
 
-//check if user exist and if true check if password is correct
+//check if user exist and ifTRUE check if password is correct
 const retrieveUser = async(attemptedUser, attemptedPassword) => {
     if(await userExist(attemptedUser)){
         const { user, password } = await userExist(attemptedUser);  
@@ -144,7 +136,7 @@ const retrieveUser = async(attemptedUser, attemptedPassword) => {
     }
     
 }
-
+//update the password for a user - used by both update and reset endpoint
 const updatePassword = async(userName, newPassword) => {
     await client.db('login_database').collection('users').updateOne({user: userName}, {$set: {password: newPassword}})
 }

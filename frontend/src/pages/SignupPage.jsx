@@ -20,6 +20,15 @@ function SignUpForm(props){
     const { loadingState } = useContext(AuthContext);
     const [loading, setLoading] = loadingState;
 
+    function usernameCheck(input) {
+        const specialChars = /[ `!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+        if (!specialChars.test(input)) {
+            return  true
+        } else {
+            return false
+        }
+      }
+
     function handleChange(e){
         const {name, value} = e.target;
 
@@ -33,32 +42,38 @@ function SignUpForm(props){
 
     function handleSignUp(e){
         e.preventDefault();
-       fetch("http://localhost:3001/users/signup", {
+        console.log(usernameCheck(userData.userName))
+        if(usernameCheck(userData.userName)){
+            fetch("http://localhost:3001/users/signup", {
             method: "POST",
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(userData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success === true){
-                setMsg({success: data.text, error: ""})
-                setUserData({
-                    userName: "",
-                    userPassword: "",
-                    email: ""
-                })
-            } else {
-                setMsg({success: "", error: data.text})
-                setUserData(prev => {
-                    return {
-                        ...prev,
-                        userName: ""
-                    }
-                })
-            }
-            
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success === true){
+                    setMsg({success: data.text, error: ""})
+                    setUserData({
+                        userName: "",
+                        userPassword: "",
+                        email: ""
+                    })
+                } else {
+                    setMsg({success: "", error: data.text})
+                    setUserData(prev => {
+                        return {
+                            ...prev,
+                            userName: ""
+                        }
+                    })
+                }
+                
 
-        })
+            })
+        } else {
+            setMsg({success: "", error: "Symbols are not allowed"})
+        }
+       
     };
 
     function handleClick(){
@@ -68,13 +83,13 @@ function SignUpForm(props){
         <>
         <div className="error">
             <p>{msg.error}</p>
-        </div>  
+        </div>
         <form className="form">
             <Input
                 onChange={handleChange}
                 value={userData.userName}
                 type="text"
-                placeholder="User name"
+                placeholder="Username"
                 name="userName"
                 id="userName"
             />

@@ -39,7 +39,6 @@ function Forgotpassword(){
                 setEmail("");
             }
         });
-        setLoading(false);
     }
 
     return (
