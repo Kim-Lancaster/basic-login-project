@@ -6,10 +6,7 @@ import { AuthContext } from '../context/AuthContext';
 
 function Forgotpassword(){
     const [email, setEmail] = useState("");
-    const [msg, setMsg] = useState({
-        success: null,
-        error: null
-    });
+    const [msg, setMsg] = useState(null);
     
     const navigate = useNavigate();
 
@@ -30,24 +27,15 @@ function Forgotpassword(){
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({email: email})
         })
-        .then(response => response.json())
-        .then(data => {
-            if(data.success === true){
-                setMsg({success: data.text, error: null})
-            } else {
-                setMsg({success: null, error: data.text})
-                setEmail("");
-            }
-        });
+        setMsg('Email sent, please check your inbox.')
+        setLoading(false)
     }
 
     return (
     <>
-        <div className='error'>
-            <p>{msg.error}</p>
-        </div>
         <form className="form">
-        {msg.success ? <p>{msg.success}</p> :
+        {msg ? <p>{msg}</p> :
+        <>
         <Input
             onChange={handleChange}
             value={email}
@@ -55,11 +43,12 @@ function Forgotpassword(){
             placeholder="Enter your email"
             name="email"
             id="email"
-            />}
+            />
         <Buttons
             isDisabled={!email ? true : loading}
             content="Send Email"
             onClick={handleClick} />
+            </>}
         </form>
         <p className='cancel' onClick={() => navigate('/')}>Back</p>
         </>

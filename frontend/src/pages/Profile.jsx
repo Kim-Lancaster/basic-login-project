@@ -29,6 +29,7 @@ function Profile(){
             })
     })
         setChanged(true)
+        setLoading(false)
     }
     //Log out
     function handleLogOutClick(){

@@ -96,7 +96,7 @@ function SignUpForm(props){
             <Input
                 onChange={handleChange}
                 value={userData.userPassword}
-                type="text"
+                type="password"
                 placeholder="Password"
                 name="userPassword"
                 id="userPassword"

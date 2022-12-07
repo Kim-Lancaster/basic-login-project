@@ -51,14 +51,14 @@ app.post('/users/forgotpassword', async(req, res) => {
     const user = await client.db('login_database').collection('users').findOne({email: req.body.email})
     if(user){
         //Create transporter for NODEMAILER if client exist
-        let transporter = nodemailer.createTransport({
-            service: "hotmail",
-            secure: false,
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
             auth: {
-                user: 'developement_test@outlook.com',
+                user: 'arvel.schultz43@ethereal.email',
                 pass: process.env.EMAIL_PASSWORD
             }
-        })
+        });
         //Create TOKEN and DATE to add to database and send in email
         const date = String(new Date().getHours()) + String(new Date().getMinutes()); //The hour and minute is needed
         const key = req.body.email + date; //something that is unique each time a token is created
@@ -71,10 +71,13 @@ app.post('/users/forgotpassword', async(req, res) => {
         const options = {
             from: "You made a request!",
             to: user.email,
-            subject: "Test",
+            subject: "Password Reset Request",
             text: `Per your request we has send you a reset token,
             http://localhost:3000/reset/${user.user}&${resetToken}&${req.body.email}&${date}
-            please click to be re-directed to a reset page.`
+            please click to be re-directed to a reset page.`,
+            html: `<h3>Hello from the developement team!</h3><p>Per your request we have send you a reset token
+            <a href='http://localhost:3000/reset/${user.user}&${resetToken}&${req.body.email}'>Click here</a>
+            please to be re-directed to a reset page.</p>`
         };
         let info = await transporter.sendMail(options); // saving response from sending the email
         //checking if any value is saved to the accepted array -> if yes then our API did it's part (no telling what the email provider will do)
@@ -117,7 +120,7 @@ const addUser = async(attemptedUser, hashedPassword, email, time) => {
     if(await userExist(attemptedUser)){
         return {success: false, text: 'That user name already exist!'};
     } else {
-        await client.db('login_database').collection('users').insertOne({user: attemptedUser, password: hashedPassword, email: email, createdAt: time})
+        await client.db('login_database').collection('users').insertOne({user: attemptedUser, password: hashedPassword, email: email})
         return {success: true, text: 'Account created!'};
     }
 }
@@ -138,7 +141,7 @@ const retrieveUser = async(attemptedUser, attemptedPassword) => {
 }
 //update the password for a user - used by both update and reset endpoint
 const updatePassword = async(userName, newPassword) => {
-    await client.db('login_database').collection('users').updateOne({user: userName}, {$set: {password: newPassword}})
+    await client.db('login_database').collection('users').updateOne({user: userName}, {$set: {password: newPassword, token: null}})
 }
 
 app.listen(3001, () => {
